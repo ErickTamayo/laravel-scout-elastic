@@ -1,0 +1,7 @@
+{
+    "name": "tamayo/laravel-scout-elastic",
+    "description": "Elastic Driver for Laravel Scout",
+    "require": {
+        "php": ">=5.6.4"
+    }
+}
