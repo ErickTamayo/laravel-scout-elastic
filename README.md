@@ -53,7 +53,7 @@ After you've published the Laravel Scout package configuration:
 
 ## Usage
 
-Now you can use Laravel Scout as described [here](https://laravel-news.com/2016/08/laravel-scout-is-now-open-for-developer-testing/)
+Now you can use Laravel Scout as described in the [official documentation](https://laravel.com/docs/5.3/scout)
 ## Credits
 
 - [Erick Tamayo](https://github.com/ericktamayo)
