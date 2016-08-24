@@ -82,8 +82,8 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
         $engine = new ElasticsearchEngine($client, 'scout');
 
         $model = Mockery::mock('Illuminate\Database\Eloquent\Model');
-        $model->shouldReceive('getKeyName')->andReturn('key');
-        $model->shouldReceive('whereIn')->once()->with('key', ['1'])->andReturn($model);
+        $model->shouldReceive('getKeyName')->andReturn('id');
+        $model->shouldReceive('whereIn')->once()->with('id', ['1'])->andReturn($model);
         $model->shouldReceive('get')->once()->andReturn(Collection::make([new ElasticsearchEngineTestModel]));
 
         $results = $engine->map([
@@ -101,8 +101,13 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
     }
 }
 
-class ElasticsearchEngineTestModel
+class ElasticsearchEngineTestModel extends \Illuminate\Database\Eloquent\Model
 {
+    public function getIdAttribute()
+    {
+        return 1;
+    }
+
     public function searchableAs()
     {
         return 'table';
