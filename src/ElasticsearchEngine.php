@@ -142,7 +142,7 @@ class ElasticsearchEngine extends Engine
             $params['body']['size'] = $options['size'];
         }
 
-        if (count($options['numericFilters'])) {
+        if (isset($options['numericFilters'])) {
             $params['body']['query']['bool']['must'] = array_merge($params['body']['query']['bool']['must'],
                 $options['numericFilters']);
         }
