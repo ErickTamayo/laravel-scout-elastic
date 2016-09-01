@@ -37,22 +37,22 @@ class ElasticsearchEngine extends Engine
      */
     public function update($models)
     {
-        $params['body'] = $models->map(function ($model) {
-            return [
-                [
-                    'update' => [
-                        '_id' => $model->getKey(),
-                        '_index' => $this->index,
-                        '_type' => $model->searchableAs(),
-                    ]
-                ],
-                [
-                    'doc' => $model->toSearchableArray(),
-                    'doc_as_upsert' => true
+        $params['body'] = [];
+
+        $models->each(function($model) use (&$params)
+        {
+            $params['body'][] = [
+                'update' => [
+                    '_id' => $model->getKey(),
+                    '_index' => $this->index,
+                    '_type' => $model->searchableAs(),
                 ]
             ];
-        })->flatten(1)
-        ->toArray();
+            $params['body'][] = [
+                'doc' => $model->toSearchableArray(),
+                'doc_as_upsert' => true
+            ];
+        });
 
         $this->elastic->bulk($params);
     }
@@ -65,15 +65,18 @@ class ElasticsearchEngine extends Engine
      */
     public function delete($models)
     {
-        $params['body'] = $models->map(function ($model) {
-            return [
+        $params['body'] = [];
+
+        $models->each(function($model) use (&$params)
+        {
+            $params['body'][] = [
                 'delete' => [
                     '_id' => $model->getKey(),
                     '_index' => $this->index,
                     '_type' => $model->searchableAs(),
                 ]
             ];
-        })->toArray();
+        });
 
         $this->elastic->bulk($params);
     }
