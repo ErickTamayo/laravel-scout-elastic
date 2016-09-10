@@ -19,11 +19,13 @@ You can install the package via composer:
 composer require tamayo/laravel-scout-elastic
 ```
 
-You must install the service provider:
+You must add the Scout service provider and the package service provider in your app.php config:
 
 ```php
 // config/app.php
 'providers' => [
+    ...
+    Laravel\Scout\ScoutServiceProvider::class,
     ...
     ScoutEngines\Elasticsearch\ElasticsearchProvider::class,
 ],
