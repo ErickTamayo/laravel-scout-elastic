@@ -130,8 +130,8 @@ class ElasticsearchEngine extends Engine
             'type' => $builder->model->searchableAs(),
             'body' => [
                 'query' => [
-                    'bool' => [
-                        'must' => [['query_string' => [ 'query' => "*{$builder->query}*"]]]
+                    'match_phrase' => [
+                        '_all' => $builder->query
                     ]
                 ]
             ]
