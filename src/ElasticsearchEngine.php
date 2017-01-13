@@ -130,8 +130,8 @@ class ElasticsearchEngine extends Engine
             'type' => $builder->model->searchableAs(),
             'body' => [
                 'query' => [
-                    'bool' => [
-                        'must' => [['query_string' => [ 'query' => "*{$builder->query}*"]]]
+                    'match_phrase' => [
+                        '_all' => $builder->query
                     ]
                 ]
             ]
@@ -145,10 +145,13 @@ class ElasticsearchEngine extends Engine
             $params['body']['size'] = $options['size'];
         }
 
-        if (isset($options['numericFilters']) && count($options['numericFilters'])) {
-            $params['body']['query']['bool']['must'] = array_merge($params['body']['query']['bool']['must'],
-                $options['numericFilters']);
-        }
+        // I am going to comment this out just to play some more with the new search query
+        /*
+         * if (isset($options['numericFilters']) && count($options['numericFilters'])) {
+         *     $params['body']['query']['bool']['must'] = array_merge($params['body']['query']['bool']['must'],
+         *      $options['numericFilters']);
+         * }
+        */
 
         return $this->elastic->search($params);
     }
