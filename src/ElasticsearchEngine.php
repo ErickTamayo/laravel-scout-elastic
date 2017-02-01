@@ -167,6 +167,17 @@ class ElasticsearchEngine extends Engine
     }
 
     /**
+     * Pluck and return the primary keys of the given results.
+     *
+     * @param  mixed  $results
+     * @return \Illuminate\Support\Collection
+     */
+    public function mapIds($results)
+    {
+        return collect($results['hits']['hits'])->pluck('_id')->values();
+    }
+
+    /**
      * Map the given results to instances of the given model.
      *
      * @param  mixed  $results
