@@ -111,7 +111,7 @@ class ElasticsearchEngine extends Engine
             'size' => $perPage,
         ]);
 
-       $result['nbPages'] = $result['hits']['total']/$perPage;
+        $result['nbPages'] = $result['hits']['total']/$perPage;
 
         return $result;
     }
@@ -131,7 +131,14 @@ class ElasticsearchEngine extends Engine
             'body' => [
                 'query' => [
                     'bool' => [
-                        'must' => [['query_string' => [ 'query' => "*{$builder->query}*"]]]
+                        'must' => [
+                            [
+                                'query_string' => [
+                                    'query' => "{$builder->query}",
+                                    'default_operator' => "AND"
+                                ]
+                            ]
+                        ]
                     ]
                 ]
             ]
@@ -191,7 +198,7 @@ class ElasticsearchEngine extends Engine
         }
 
         $keys = collect($results['hits']['hits'])
-                        ->pluck('_id')->values()->all();
+            ->pluck('_id')->values()->all();
 
         $models = $model->whereIn(
             $model->getKeyName(), $keys
