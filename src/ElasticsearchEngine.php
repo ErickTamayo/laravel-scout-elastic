@@ -204,8 +204,12 @@ class ElasticsearchEngine extends Engine
         )->get()->keyBy($model->getKeyName());
 
         return collect($results['hits']['hits'])->map(function ($hit) use ($model, $models) {
-            return $models[$hit['_id']];
-        });
+            $key = $hit['_id'];
+
+            if (isset($models[$key])) {
+                return $models[$key];
+            }
+        })->filter();
     }
 
     /**
