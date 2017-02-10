@@ -62,8 +62,19 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
                 'query' => [
                     'bool' => [
                         'must' => [
-                            ['query_string' => ['query' => '*zonda*']],
-                            ['match_phrase' => ['foo' => 1]]
+                            [
+                                'query_string' => [
+                                    'query' => 'zonda',
+                                    'default_operator' => "AND"
+                                ]
+                            ]
+                        ],
+                        'filter' => [
+                            [
+                                'term' => [
+                                    'foo' => 1
+                                ]
+                            ]
                         ]
                     ]
                 ]

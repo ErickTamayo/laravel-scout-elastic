@@ -111,7 +111,7 @@ class ElasticsearchEngine extends Engine
             'size' => $perPage,
         ]);
 
-       $result['nbPages'] = $result['hits']['total']/$perPage;
+        $result['nbPages'] = $result['hits']['total']/$perPage;
 
         return $result;
     }
@@ -131,7 +131,14 @@ class ElasticsearchEngine extends Engine
             'body' => [
                 'query' => [
                     'bool' => [
-                        'must' => [['query_string' => [ 'query' => "*{$builder->query}*"]]]
+                        'must' => [
+                            [
+                                'query_string' => [
+                                    'query' => "{$builder->query}",
+                                    'default_operator' => "AND"
+                                ]
+                            ]
+                        ]
                     ]
                 ]
             ]
@@ -146,8 +153,7 @@ class ElasticsearchEngine extends Engine
         }
 
         if (isset($options['numericFilters']) && count($options['numericFilters'])) {
-            $params['body']['query']['bool']['must'] = array_merge($params['body']['query']['bool']['must'],
-                $options['numericFilters']);
+            $params['body']['query']['bool']['filter'] = $options['numericFilters'];
         }
 
         return $this->elastic->search($params);
@@ -162,8 +168,19 @@ class ElasticsearchEngine extends Engine
     protected function filters(Builder $builder)
     {
         return collect($builder->wheres)->map(function ($value, $key) {
-            return ['match_phrase' => [$key => $value]];
+            return ['term' => [$key => $value]];
         })->values()->all();
+    }
+
+    /**
+     * Pluck and return the primary keys of the given results.
+     *
+     * @param  mixed  $results
+     * @return \Illuminate\Support\Collection
+     */
+    public function mapIds($results)
+    {
+        return collect($results['hits']['hits'])->pluck('_id')->values();
     }
 
     /**
@@ -180,15 +197,19 @@ class ElasticsearchEngine extends Engine
         }
 
         $keys = collect($results['hits']['hits'])
-                        ->pluck('_id')->values()->all();
+            ->pluck('_id')->values()->all();
 
         $models = $model->whereIn(
             $model->getKeyName(), $keys
         )->get()->keyBy($model->getKeyName());
 
         return collect($results['hits']['hits'])->map(function ($hit) use ($model, $models) {
-            return $models[$hit['_id']];
-        });
+            $key = $hit['_id'];
+
+            if (isset($models[$key])) {
+                return $models[$key];
+            }
+        })->filter();
     }
 
     /**
