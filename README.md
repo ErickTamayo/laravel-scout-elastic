@@ -49,6 +49,16 @@ After you've published the Laravel Scout package configuration:
         'hosts' => [
             env('ELASTICSEARCH_HOST', 'http://localhost'),
         ],
+        'queries' => [
+            'default' => 'query_string',
+            'query_string' => [
+                'default_operator' => "AND"
+            ],
+            'multi_match' => [
+                'fields' => '_all',
+                'fuzziness' => 'auto'
+            ]
+        ]
     ],
 ...
 ```
@@ -56,6 +66,28 @@ After you've published the Laravel Scout package configuration:
 ## Usage
 
 Now you can use Laravel Scout as described in the [official documentation](https://laravel.com/docs/5.3/scout)
+
+### Query methods
+
+You can specify query method and parameters in the config, these can be overwritten when searching, e.g. by making a trait:
+
+```
+trait SearchableUsing
+{
+    public $searchQueryMethod;
+    public $searchQueryParams;
+
+    public static function searchUsing($method, $query, array $params = null)
+    {
+        $model = new static;
+        $model->searchQueryMethod = $method;
+        $model->searchQueryParams = $params;
+
+        return new ScoutBuilder($model, $query);
+    }
+}
+```
+
 ## Credits
 
 - [Erick Tamayo](https://github.com/ericktamayo)

@@ -18,15 +18,29 @@ class ElasticsearchEngine extends Engine
     protected $index;
 
     /**
+     * @var Elastic Client
+     */
+    protected $elastic;
+
+    /**
+     * Default query and query parameters from scout config.
+     *
+     * @var array
+     */
+    protected $queryConfig;
+
+    /**
      * Create a new engine instance.
      *
-     * @param  \Elasticsearch\Client  $elastic
-     * @return void
+     * @param  \Elasticsearch\Client $elastic
+     * @param $index
+     * @param $queryConfig
      */
-    public function __construct(Elastic $elastic, $index)
+    public function __construct(Elastic $elastic, $index, $queryConfig)
     {
         $this->elastic = $elastic;
         $this->index = $index;
+        $this->queryConfig = $queryConfig;
     }
 
     /**
@@ -125,6 +139,9 @@ class ElasticsearchEngine extends Engine
      */
     protected function performSearch(Builder $builder, array $options = [])
     {
+        $queryMethod = $builder->model->searchQueryMethod ?? $this->queryConfig['default'];
+        $queryParams = $builder->model->searchQueryParams ?? $this->queryConfig[$queryMethod];
+
         $params = [
             'index' => $this->index,
             'type' => $builder->model->searchableAs(),
@@ -133,10 +150,9 @@ class ElasticsearchEngine extends Engine
                     'bool' => [
                         'must' => [
                             [
-                                'query_string' => [
-                                    'query' => "{$builder->query}",
-                                    'default_operator' => "AND"
-                                ]
+                                $queryMethod => array_merge([
+                                    'query' => "{$builder->query}"
+                                ], $queryParams)
                             ]
                         ]
                     ]
