@@ -105,6 +105,7 @@ class ElasticsearchEngine extends Engine
     {
         return $this->performSearch($builder, array_filter([
             'numericFilters' => $this->filters($builder),
+            'sorting' => $this->sorting($builder),
             'size' => $builder->limit,
         ]));
     }
@@ -121,6 +122,7 @@ class ElasticsearchEngine extends Engine
     {
         $result = $this->performSearch($builder, [
             'numericFilters' => $this->filters($builder),
+            'sorting' => $this->sorting($builder),
             'from' => (($page * $perPage) - $perPage),
             'size' => $perPage,
         ]);
@@ -156,7 +158,11 @@ class ElasticsearchEngine extends Engine
                             ]
                         ]
                     ]
-                ]
+                ],
+                'sort' => [
+                    '_score'
+                ],
+                'track_scores' => true,
             ]
         ];
 
@@ -172,6 +178,12 @@ class ElasticsearchEngine extends Engine
             $params['body']['query']['bool']['filter'] = $options['numericFilters'];
         }
 
+        // Sorting
+        if(isset($options['sorting']) && count($options['sorting'])) {
+            $params['body']['sort'] = array_merge($params['body']['sort'],
+                $options['sorting']);
+        }
+
         return $this->elastic->search($params);
     }
 
@@ -185,6 +197,17 @@ class ElasticsearchEngine extends Engine
     {
         return collect($builder->wheres)->map(function ($value, $key) {
             return ['term' => [$key => $value]];
+        })->values()->all();
+    }
+
+    /**
+     * @param Builder $builder
+     * @return array
+     */
+    protected function sorting(Builder $builder)
+    {
+        return collect($builder->orders)->map(function ($value, $key) {
+            return [array_get($value, 'column') => ['order' => array_get($value, 'direction')]];
         })->values()->all();
     }
 
