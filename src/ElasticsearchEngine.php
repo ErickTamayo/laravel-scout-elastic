@@ -6,17 +6,9 @@ use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;
 use Elasticsearch\Client as Elastic;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Collection as BaseCollection;
 
 class ElasticsearchEngine extends Engine
 {
-    /**
-     * Index where the models will be saved.
-     *
-     * @var string
-     */
-    protected $index;
-
     /**
      * @var Elastic Client
      */
@@ -33,13 +25,11 @@ class ElasticsearchEngine extends Engine
      * Create a new engine instance.
      *
      * @param  \Elasticsearch\Client $elastic
-     * @param $index
      * @param $queryConfig
      */
-    public function __construct(Elastic $elastic, $index, $queryConfig)
+    public function __construct(Elastic $elastic, $queryConfig)
     {
         $this->elastic = $elastic;
-        $this->index = $index;
         $this->queryConfig = $queryConfig;
     }
 
@@ -58,7 +48,7 @@ class ElasticsearchEngine extends Engine
             $params['body'][] = [
                 'update' => [
                     '_id' => $model->getKey(),
-                    '_index' => $this->index,
+                    '_index' => $model->searchableWithin(),
                     '_type' => $model->searchableAs(),
                 ]
             ];
@@ -86,7 +76,7 @@ class ElasticsearchEngine extends Engine
             $params['body'][] = [
                 'delete' => [
                     '_id' => $model->getKey(),
-                    '_index' => $this->index,
+                    '_index' => $model->searchableWithin(),
                     '_type' => $model->searchableAs(),
                 ]
             ];
@@ -141,11 +131,11 @@ class ElasticsearchEngine extends Engine
      */
     protected function performSearch(Builder $builder, array $options = [])
     {
-        $queryMethod = $builder->model->searchQueryMethod ?? $this->queryConfig['default'];
-        $queryParams = $builder->model->searchQueryParams ?? $this->queryConfig[$queryMethod];
+        $queryMethod = $builder->model->elasticQuery['method'] ?? $this->queryConfig['default'];
+        $queryParams = $builder->model->elasticQuery['params'] ?? $this->queryConfig[$queryMethod];
 
         $params = [
-            'index' => $this->index,
+            'index' => $builder->model->searchableWithin(),
             'type' => $builder->model->searchableAs(),
             'body' => [
                 'query' => [

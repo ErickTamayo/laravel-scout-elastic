@@ -5,6 +5,8 @@ namespace ScoutEngines\Elasticsearch;
 use Laravel\Scout\EngineManager;
 use Illuminate\Support\ServiceProvider;
 use Elasticsearch\ClientBuilder as ElasticBuilder;
+use ScoutEngines\Elasticsearch\Console\ElasticIndicesCommand;
+use ScoutEngines\Elasticsearch\Console\ElasticMakeIndexCommand;
 
 class ElasticsearchProvider extends ServiceProvider
 {
@@ -15,11 +17,24 @@ class ElasticsearchProvider extends ServiceProvider
     {
         resolve(EngineManager::class)->extend('elasticsearch', function($app) {
             return new ElasticsearchEngine(ElasticBuilder::create()
-                ->setHosts(config('scout.elasticsearch.hosts'))
+                ->setHosts(config('elasticsearch.hosts'))
                 ->build(),
-                config('scout.elasticsearch.index'),
-                config('scout.elasticsearch.queries')
+                config('elasticsearch.queries')
             );
         });
+    }
+
+    public function register()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                ElasticIndicesCommand::class,
+                ElasticMakeIndexCommand::class
+            ]);
+
+            $this->publishes([
+                __DIR__ . '/../config/elasticsearch.php' => config_path('elasticsearch.php'),
+            ]);
+        }
     }
 }
