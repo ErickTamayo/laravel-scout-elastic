@@ -87,7 +87,12 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
                     ]
                 ],
                 'sort' => [
-                    '_score'
+                    '_score',
+                    [
+                        'title' => [
+                            'order' => 'desc'
+                        ]
+                    ]
                 ],
                 'track_scores' => true,
             ]
@@ -96,6 +101,7 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
         $engine = new ElasticsearchEngine($client, $this->queryConfig);
         $builder = new Laravel\Scout\Builder(new ElasticsearchEngineTestModel, 'zonda');
         $builder->where('foo', 1);
+        $builder->orderBy('title', 'desc');
         $engine->search($builder);
     }
 
