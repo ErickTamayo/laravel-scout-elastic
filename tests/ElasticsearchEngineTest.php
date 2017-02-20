@@ -5,6 +5,14 @@ use ScoutEngines\Elasticsearch\ElasticsearchEngine;
 
 class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
 {
+    public $queryConfig = [
+        'default' => 'query_string',
+
+        'query_string' => [
+            'default_operator' => "AND"
+        ]
+    ];
+
     public function tearDown()
     {
         Mockery::close();
@@ -29,7 +37,7 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
             ]
         ]);
 
-        $engine = new ElasticsearchEngine($client, 'scout');
+        $engine = new ElasticsearchEngine($client, $this->queryConfig);
         $engine->update(Collection::make([new ElasticsearchEngineTestModel]));
     }
 
@@ -48,7 +56,7 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
             ]
         ]);
 
-        $engine = new ElasticsearchEngine($client, 'scout');
+        $engine = new ElasticsearchEngine($client, $this->queryConfig);
         $engine->delete(Collection::make([new ElasticsearchEngineTestModel]));
     }
 
@@ -77,11 +85,15 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
                             ]
                         ]
                     ]
-                ]
+                ],
+                'sort' => [
+                    '_score'
+                ],
+                'track_scores' => true,
             ]
         ]);
 
-        $engine = new ElasticsearchEngine($client, 'scout');
+        $engine = new ElasticsearchEngine($client, $this->queryConfig);
         $builder = new Laravel\Scout\Builder(new ElasticsearchEngineTestModel, 'zonda');
         $builder->where('foo', 1);
         $engine->search($builder);
@@ -90,7 +102,7 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
     public function test_map_correctly_maps_results_to_models()
     {
         $client = Mockery::mock('Elasticsearch\Client');
-        $engine = new ElasticsearchEngine($client, 'scout');
+        $engine = new ElasticsearchEngine($client, $this->queryConfig);
 
         $model = Mockery::mock('Illuminate\Database\Eloquent\Model');
         $model->shouldReceive('getKeyName')->andReturn('id');
@@ -117,6 +129,11 @@ class ElasticsearchEngineTestModel extends \Illuminate\Database\Eloquent\Model
     public function getIdAttribute()
     {
         return 1;
+    }
+
+    public function searchableWithin()
+    {
+        return 'scout';
     }
 
     public function searchableAs()
