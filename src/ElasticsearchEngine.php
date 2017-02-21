@@ -131,8 +131,11 @@ class ElasticsearchEngine extends Engine
      */
     protected function performSearch(Builder $builder, array $options = [])
     {
-        $queryMethod = $builder->model->elasticQuery['method'] ?? $this->queryConfig['default'];
-        $queryParams = $builder->model->elasticQuery['params'] ?? $this->queryConfig[$queryMethod];
+        $queryMethod = isset($builder->model->elasticQuery['method']) ?
+            $builder->model->elasticQuery['method'] : $this->queryConfig['default'];
+
+        $queryParams = isset($builder->model->elasticQuery['params']) ?
+            $builder->model->elasticQuery['params'] : $this->queryConfig[$queryMethod];
 
         $params = [
             'index' => $builder->model->searchableWithin(),

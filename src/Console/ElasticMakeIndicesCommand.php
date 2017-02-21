@@ -69,7 +69,11 @@ class ElasticMakeIndicesCommand extends Command
                 ]
             ]);
 
-            foreach ($indexConfig['mappings'] ?? [] as $type => $mapping) {
+            if (! isset($indexConfig['mappings'])) {
+                continue;
+            }
+
+            foreach ($indexConfig['mappings'] as $type => $mapping) {
 
                 // Create mapping for type, from config file
                 $this->info("- Creating mapping for: {$type}");
