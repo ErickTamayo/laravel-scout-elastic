@@ -52,7 +52,7 @@ return [
             ],
             'mappings' => [
                 'articles' => [
-                    'title'  => [
+                    'title' => [
                         'type' => 'string'
                     ]
                 ]
@@ -66,7 +66,7 @@ return [
             ],
             'mappings' => [
                 'articles' => [
-                    'title'  => [
+                    'title' => [
                         'type' => 'string'
                     ]
                 ]

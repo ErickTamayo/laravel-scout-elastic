@@ -6,7 +6,7 @@ use Laravel\Scout\EngineManager;
 use Illuminate\Support\ServiceProvider;
 use Elasticsearch\ClientBuilder as ElasticBuilder;
 use ScoutEngines\Elasticsearch\Console\ElasticIndicesCommand;
-use ScoutEngines\Elasticsearch\Console\ElasticMakeIndexCommand;
+use ScoutEngines\Elasticsearch\Console\ElasticMakeIndicesCommand;
 
 class ElasticsearchProvider extends ServiceProvider
 {
@@ -29,7 +29,7 @@ class ElasticsearchProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 ElasticIndicesCommand::class,
-                ElasticMakeIndexCommand::class
+                ElasticMakeIndicesCommand::class
             ]);
 
             $this->publishes([
