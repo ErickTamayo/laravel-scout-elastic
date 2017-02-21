@@ -52,10 +52,85 @@ After you've published the Laravel Scout package configuration:
 
 ## Usage
 
-Now you can use Laravel Scout as described in the [official documentation](https://laravel.com/docs/5.3/scout)
+### Creating Elasticsearch indexes with proper mapping
 
-However; to use the extra Elasticsearch features included in this package, use trait `ElasticSearchable`.
-This includes everything from Scout, plus a few extras, like the `elasticSearch` method:
+You may define custom mappings for Elasticserch fields in the config. The config has examples.
+If you prefer storing mappings in models, you may create a static public method `mapping()` in each particular model :
+
+```
+class Property extends Model
+{
+    // ...
+    public static function mapping() {
+        return [
+            'location' => [
+                'type' => 'geo_point'
+            ],
+        ];
+    }
+    // ...
+}
+```
+And then use it from the config:
+```
+ 'indices' => [
+
+    'realestate' => [
+        'settings' => [
+            "number_of_shards" => 1,
+            "number_of_replicas" => 0,
+        ],
+        'mappings' => [
+            'properties' => \App\Property::mapping(),
+        ],
+    ],
+ ]
+
+```
+Elasticsearch can set default types to model fields on the first insert if you do not explicitly define them. 
+However, sometimes the defaults are not what you're looking for.
+
+In that case, we strongly recommend creating indexes with proper mappings before inserting any data.
+For that purpose, there is an Artisan's command, called `elastic:make-index {index?}` which creates indexes based on
+your config.
+
+To create all indexes from your config just ignore the `{index?}` parameter and run:
+
+```
+php artisan elastic:make-index
+```
+
+Please note: this command will remove all existing indexes with the same names.
+
+To get information about your existing Elasticsearch indexes you may want to use the following command:
+
+```
+php artisan elastic:indices
+```
+
+### Indexing data
+
+You may follow instructions from the [official Laravel Scout documentation](https://laravel.com/docs/5.3/scout)
+to index your data.
+
+### Search
+
+The package supports everything that is provided by Laravel Scout.
+However, to use the extra Elasticsearch features included in this package, use trait `ElasticSearchable` 
+by adding it to your model instead of `Searchable`:
+
+```
+class Article extends Model
+{
+    // use Searchable;
+    use ElasticSearchable;
+    // ...
+}
+```
+
+The package features:
+ 
+1) The `elasticSearch` method:
 
 ```
 $articles = Article::elasticSearch('multi_match', $q, [
@@ -68,7 +143,20 @@ $articles = Article::elasticSearch('multi_match', $q, [
     ->get();
 ```
 
-You may also choose which index a model belongs to by overriding `searchableWithin()`:
+You may find and adjust default query type and options for each query type in config (Queries section).
+
+2) Sorting with `orderBy()` method:
+
+```
+$articles = Article::search($keywords)
+            ->orderBy('id', 'desc')
+            ->get();
+```
+
+3) A separate Elasticsearch index for each model.
+
+If you have defined several indexes in your config (config/elasticsearch.php), 
+you may choose which index a model belongs to by overriding `searchableWithin()` method in your model:
 
 ```
 public function searchableWithin()
@@ -76,6 +164,8 @@ public function searchableWithin()
     return 'foobar';
 }
 ```
+
+Please note: if you do not override `searchableWithin()` in your model, the first index from the config will be used.
 
 ## Credits
 
