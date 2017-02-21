@@ -94,7 +94,7 @@ In that case, we strongly recommend creating indexes with proper mappings before
 For that purpose, there is an Artisan's command, called `elastic:make-index {index?}` which creates indexes based on
 your config.
 
-To create all indexes from your config just ignore the {index?} parameter and run:
+To create all indexes from your config just ignore the `{index?}` parameter and run:
 
 ```
 php artisan elastic:make-index
