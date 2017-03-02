@@ -55,7 +55,7 @@ After you've published the Laravel Scout package configuration:
 You may define custom mappings for Elasticsearch fields in the config. See examples in the [config file](config/elasticsearch.php).
 If you prefer storing mappings in models, you may create a static public method `mapping()` in each particular model:
 
-```
+```php
 class Article extends Model
 {
     // ...
@@ -70,7 +70,7 @@ class Article extends Model
 }
 ```
 And then use it in the config file:
-```
+```php
  'indices' => [
 
     'realestate' => [
@@ -120,7 +120,7 @@ The Scout `search` method used the default query method defined in the config fi
 
 Sorting with `orderBy()` method:
 
-```
+```php
 $articles = Article::search($keywords)
             ->orderBy('id', 'desc')
             ->get();
@@ -131,7 +131,7 @@ $articles = Article::search($keywords)
 However, to use the extra Elasticsearch features included in this package, use trait `ElasticSearchable` 
 by adding it to your model instead of `Searchable`:
 
-```
+```php
 class Article extends Model
 {
     // use Searchable;
@@ -144,7 +144,7 @@ The package features:
  
 1) The `elasticSearch` method, `elasticSearch($method, $query, array $params = null)`:
 
-```
+```php
 $articles = Article::elasticSearch('multi_match', $q, [
     'fields' => ['title', 'content', 'tags'],
     'fuzziness' => 'auto',
@@ -160,7 +160,7 @@ Parameters are taken from the configuration, for the specific query method, if n
 If you have defined several indices in your [config file](config/elasticsearch.php), 
 you may choose which index a model belongs to by overriding `searchableWithin()` method in your model:
 
-```
+```php
 public function searchableWithin()
 {
     return 'foobar';
