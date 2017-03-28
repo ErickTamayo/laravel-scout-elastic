@@ -99,7 +99,7 @@ To create all indices from your config just ignore the `{index}` parameter and r
 php artisan elastic:make-indices
 ```
 
-:warning: Please note: This command **will remove all existing indexes** with the same names!
+If the index exists you will be asked if you want to delete and recreate it, or you can use the `--force` flag.
 
 To get information about your existing Elasticsearch indices you may want to use the following command:
 

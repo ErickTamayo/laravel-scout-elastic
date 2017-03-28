@@ -12,7 +12,7 @@ class ElasticMakeIndicesCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'elastic:make-indices {index?}';
+    protected $signature = 'elastic:make-indices {index?} {--force}';
 
     /**
      * The console command description.
@@ -56,8 +56,13 @@ class ElasticMakeIndicesCommand extends Command
 
             // Delete index if it already exists
             if ($client->indices()->exists(['index' => $index])) {
-                $this->warn("Index \"{$index}\" exists, deleting!");
-                $client->indices()->delete(['index' => $index]);
+                if ($this->option('force') || $this->confirm("Index \"{$index}\" exists, delete and recreate?")) {
+                    $this->warn("Index \"{$index}\" exists, deleting!");
+                    $client->indices()->delete(['index' => $index]);
+                } else {
+                    $this->line("Skipping index: \"{$index}\"");
+                    continue;
+                }
             }
 
             // Create index with settings from config file
