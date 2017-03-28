@@ -6,27 +6,31 @@ use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;
 use Elasticsearch\Client as Elastic;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Collection as BaseCollection;
 
 class ElasticsearchEngine extends Engine
 {
     /**
-     * Index where the models will be saved.
-     *
-     * @var string
+     * @var Elastic Client
      */
-    protected $index;
+    protected $elastic;
+
+    /**
+     * Default query and query parameters from scout config.
+     *
+     * @var array
+     */
+    protected $queryConfig;
 
     /**
      * Create a new engine instance.
      *
-     * @param  \Elasticsearch\Client  $elastic
-     * @return void
+     * @param  \Elasticsearch\Client $elastic
+     * @param $queryConfig
      */
-    public function __construct(Elastic $elastic, $index)
+    public function __construct(Elastic $elastic, $queryConfig)
     {
         $this->elastic = $elastic;
-        $this->index = $index;
+        $this->queryConfig = $queryConfig;
     }
 
     /**
@@ -44,7 +48,7 @@ class ElasticsearchEngine extends Engine
             $params['body'][] = [
                 'update' => [
                     '_id' => $model->getKey(),
-                    '_index' => $this->index,
+                    '_index' => $model->searchableWithin(),
                     '_type' => $model->searchableAs(),
                 ]
             ];
@@ -72,7 +76,7 @@ class ElasticsearchEngine extends Engine
             $params['body'][] = [
                 'delete' => [
                     '_id' => $model->getKey(),
-                    '_index' => $this->index,
+                    '_index' => $model->searchableWithin(),
                     '_type' => $model->searchableAs(),
                 ]
             ];
@@ -91,6 +95,7 @@ class ElasticsearchEngine extends Engine
     {
         return $this->performSearch($builder, array_filter([
             'numericFilters' => $this->filters($builder),
+            'sorting' => $this->sorting($builder),
             'size' => $builder->limit,
         ]));
     }
@@ -107,11 +112,12 @@ class ElasticsearchEngine extends Engine
     {
         $result = $this->performSearch($builder, [
             'numericFilters' => $this->filters($builder),
+            'sorting' => $this->sorting($builder),
             'from' => (($page * $perPage) - $perPage),
             'size' => $perPage,
         ]);
 
-       $result['nbPages'] = $result['hits']['total']/$perPage;
+        $result['nbPages'] = $result['hits']['total']/$perPage;
 
         return $result;
     }
@@ -125,15 +131,31 @@ class ElasticsearchEngine extends Engine
      */
     protected function performSearch(Builder $builder, array $options = [])
     {
+        $queryMethod = isset($builder->model->elasticQuery['method']) ?
+            $builder->model->elasticQuery['method'] : $this->queryConfig['default'];
+
+        $queryParams = isset($builder->model->elasticQuery['params']) ?
+            $builder->model->elasticQuery['params'] : $this->queryConfig[$queryMethod];
+
         $params = [
-            'index' => $this->index,
+            'index' => $builder->model->searchableWithin(),
             'type' => $builder->model->searchableAs(),
             'body' => [
                 'query' => [
                     'bool' => [
-                        'must' => [['query_string' => [ 'query' => "*{$builder->query}*"]]]
+                        'must' => [
+                            [
+                                $queryMethod => array_merge([
+                                    'query' => "{$builder->query}"
+                                ], $queryParams)
+                            ]
+                        ]
                     ]
-                ]
+                ],
+                'sort' => [
+                    '_score'
+                ],
+                'track_scores' => true,
             ]
         ];
 
@@ -146,8 +168,13 @@ class ElasticsearchEngine extends Engine
         }
 
         if (isset($options['numericFilters']) && count($options['numericFilters'])) {
-            $params['body']['query']['bool']['must'] = array_merge($params['body']['query']['bool']['must'],
-                $options['numericFilters']);
+            $params['body']['query']['bool']['filter'] = $options['numericFilters'];
+        }
+
+        // Sorting
+        if(isset($options['sorting']) && count($options['sorting'])) {
+            $params['body']['sort'] = array_merge($params['body']['sort'],
+                $options['sorting']);
         }
 
         return $this->elastic->search($params);
@@ -162,7 +189,18 @@ class ElasticsearchEngine extends Engine
     protected function filters(Builder $builder)
     {
         return collect($builder->wheres)->map(function ($value, $key) {
-            return ['match_phrase' => [$key => $value]];
+            return ['term' => [$key => $value]];
+        })->values()->all();
+    }
+
+    /**
+     * @param Builder $builder
+     * @return array
+     */
+    protected function sorting(Builder $builder)
+    {
+        return collect($builder->orders)->map(function ($value, $key) {
+            return [array_get($value, 'column') => ['order' => array_get($value, 'direction')]];
         })->values()->all();
     }
 
@@ -191,15 +229,19 @@ class ElasticsearchEngine extends Engine
         }
 
         $keys = collect($results['hits']['hits'])
-                        ->pluck('_id')->values()->all();
+            ->pluck('_id')->values()->all();
 
         $models = $model->whereIn(
             $model->getKeyName(), $keys
         )->get()->keyBy($model->getKeyName());
 
         return collect($results['hits']['hits'])->map(function ($hit) use ($model, $models) {
-            return $models[$hit['_id']];
-        });
+            $key = $hit['_id'];
+
+            if (isset($models[$key])) {
+                return $models[$key];
+            }
+        })->filter();
     }
 
     /**
