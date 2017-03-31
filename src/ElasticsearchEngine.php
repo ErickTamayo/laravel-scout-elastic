@@ -127,7 +127,7 @@ class ElasticsearchEngine extends Engine
     {
         $params = [
             'index' => $this->index,
-            'type' => $builder->model->searchableAs(),
+            'type' => $builder->index ?: $builder->model->searchableAs(),
             'body' => [
                 'query' => [
                     'bool' => [
@@ -136,6 +136,10 @@ class ElasticsearchEngine extends Engine
                 ]
             ]
         ];
+
+        if ($sort = $this->sort($builder)) {
+            $params['body']['sort'] = $sort;
+        }
 
         if (isset($options['from'])) {
             $params['body']['from'] = $options['from'];
@@ -198,8 +202,8 @@ class ElasticsearchEngine extends Engine
         )->get()->keyBy($model->getKeyName());
 
         return collect($results['hits']['hits'])->map(function ($hit) use ($model, $models) {
-            return $models[$hit['_id']];
-        });
+            return isset($models[$hit['_id']]) ? $models[$hit['_id']] : null;
+        })->filter();
     }
 
     /**
@@ -211,5 +215,22 @@ class ElasticsearchEngine extends Engine
     public function getTotalCount($results)
     {
         return $results['hits']['total'];
+    }
+
+    /**
+     * Generates the sort if theres any.
+     *
+     * @param  Builder $builder
+     * @return array|null
+     */
+    protected function sort($builder)
+    {
+        if (count($builder->orders) == 0) {
+            return null;
+        }
+
+        return collect($builder->orders)->map(function($order) {
+            return [$order['column'] => $order['direction']];
+        })->toArray();
     }
 }
