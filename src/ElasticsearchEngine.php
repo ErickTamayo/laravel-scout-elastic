@@ -16,6 +16,13 @@ class ElasticsearchEngine extends Engine
      * @var string
      */
     protected $index;
+    
+    /**
+     * Elastic where the instance of Elastic|\Elasticsearch\Client is stored.
+     *
+     * @var object
+     */
+    protected $elastic;
 
     /**
      * Create a new engine instance.
