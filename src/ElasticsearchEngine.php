@@ -154,6 +154,15 @@ class ElasticsearchEngine extends Engine
                 $options['numericFilters']);
         }
 
+        if ($builder->callback) {
+            return call_user_func(
+                $builder->callback,
+                $this->elastic,
+                $builder->query,
+                $params
+            );
+        }
+
         return $this->elastic->search($params);
     }
 
