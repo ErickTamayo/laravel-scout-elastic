@@ -11,11 +11,18 @@ use Illuminate\Support\Collection as BaseCollection;
 class ElasticsearchEngine extends Engine
 {
     /**
-     * Index where the models will be saved.
+     * Default index where the models will be saved.
      *
      * @var string
      */
     protected $index;
+
+    /**
+     * If the index should be set per model.
+     *
+     * @var bool
+     */
+    protected $perModelIndex;
 
     /**
      * Create a new engine instance.
@@ -23,11 +30,24 @@ class ElasticsearchEngine extends Engine
      * @param  \Elasticsearch\Client  $elastic
      * @return void
      */
-    public function __construct(Elastic $elastic, $index)
+    public function __construct(Elastic $elastic, $index, $perModelIndex = false)
     {
         $this->elastic = $elastic;
         $this->index = $index;
+        $this->perModelIndex = $perModelIndex;
     }
+
+    /**
+     * Retrieves the index for the given model.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return string
+     */
+    protected function getIndex($model)
+    {
+        return ($this->perModelIndex ? $model->searchableAs() : $this->index);
+    }
+
 
     /**
      * Update the given model in the index.
@@ -44,7 +64,7 @@ class ElasticsearchEngine extends Engine
             $params['body'][] = [
                 'update' => [
                     '_id' => $model->getKey(),
-                    '_index' => $this->index,
+                    '_index' => $this->getIndex($model),
                     '_type' => $model->searchableAs(),
                 ]
             ];
@@ -72,7 +92,7 @@ class ElasticsearchEngine extends Engine
             $params['body'][] = [
                 'delete' => [
                     '_id' => $model->getKey(),
-                    '_index' => $this->index,
+                    '_index' => $this->getIndex($model),
                     '_type' => $model->searchableAs(),
                 ]
             ];
@@ -126,7 +146,7 @@ class ElasticsearchEngine extends Engine
     protected function performSearch(Builder $builder, array $options = [])
     {
         $params = [
-            'index' => $this->index,
+            'index' => $builder->index ?: $this->getIndex($builder->model),
             'type' => $builder->index ?: $builder->model->searchableAs(),
             'body' => [
                 'query' => [
