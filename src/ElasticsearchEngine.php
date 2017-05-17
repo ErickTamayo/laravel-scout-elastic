@@ -48,7 +48,6 @@ class ElasticsearchEngine extends Engine
         return ($this->perModelIndex ? $model->searchableAs() : $this->index);
     }
 
-
     /**
      * Update the given model in the index.
      *
