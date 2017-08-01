@@ -1,7 +1,7 @@
 {
-    "name": "tamayo/laravel-scout-elastic",
-    "description": "Elastic Driver for Laravel Scout",
-    "keywords": ["laravel", "scout", "elasticsearch", "elastic"],
+    "name": "bethink/elastic-scout",
+    "description": "Elasticsearch Driver for Laravel Scout",
+    "keywords": ["elasticsearch", "laravel", "php", "laravel-scout"],
     "require": {
         "php": ">=5.6.4",
         "laravel/scout": "^3.0",
