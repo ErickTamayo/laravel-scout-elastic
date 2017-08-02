@@ -1,6 +1,8 @@
 {
     "name": "thomasjsn/laravel-scout-elastic",
     "description": "Elastic Driver for Laravel Scout",
+    "homepage": "https://github.com/thomasjsn/laravel-scout-elastic",
+    "license": "MIT",
     "keywords": ["laravel", "scout", "elasticsearch", "elastic"],
     "require": {
         "php": ">=5.6.4",
