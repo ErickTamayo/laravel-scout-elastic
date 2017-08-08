@@ -63,7 +63,8 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
                     'bool' => [
                         'must' => [
                             ['query_string' => ['query' => '*zonda*']],
-                            ['match_phrase' => ['foo' => 1]]
+                            ['match_phrase' => ['foo' => 1]],
+                            ['terms' => ['bar' => [1, 3]]],
                         ]
                     ]
                 ],
@@ -76,6 +77,7 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
         $engine = new ElasticsearchEngine($client, 'scout');
         $builder = new Laravel\Scout\Builder(new ElasticsearchEngineTestModel, 'zonda');
         $builder->where('foo', 1);
+        $builder->where('bar', [1, 3]);
         $builder->orderBy('id', 'desc');
         $engine->search($builder);
     }
