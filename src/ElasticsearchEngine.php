@@ -97,6 +97,16 @@ class ElasticsearchEngine extends Engine
 		]));
 	}
 
+	public function searchRaw($model, $query)
+	{
+		$defaults = [
+			'index' => $this->index,
+			'type'  => $model->searchableAs()
+		];
+
+		return $this->elastic->search(array_merge($defaults, $query));
+	}
+
 	/**
 	 * Perform the given search on the engine.
 	 *
