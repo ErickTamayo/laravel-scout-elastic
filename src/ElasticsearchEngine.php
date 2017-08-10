@@ -101,11 +101,23 @@ class ElasticsearchEngine extends Engine
 	{
 		$defaults = [
 			'index' => $this->index,
-			'type'  => $model->searchableAs()
+			'type'  => $model->searchableAs(),
 		];
 
 		return $this->elastic->search(array_merge($defaults, $query));
 	}
+
+	public function savePhrase($model, $params)
+	{
+		$type = $model->searchableAs();
+
+		$this->elastic->index([
+			'index' => $this->index,
+			'type'  => $type . '_search_phrases',
+			'body'  => $params,
+		]);
+	}
+
 
 	/**
 	 * Perform the given search on the engine.
