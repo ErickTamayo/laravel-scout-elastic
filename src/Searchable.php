@@ -10,10 +10,18 @@ trait Searchable
 
 	public static function searchRaw($query)
 	{
-
 		$model = new static();
 
 		return $model->searchableUsing()
 			->searchRaw($model, $query);
+	}
+
+	public static function savePhrase($params)
+	{
+		$model = new static();
+
+		return $model
+			->searchableUsing()
+			->savePhrase($model, $params);
 	}
 }
