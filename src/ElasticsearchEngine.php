@@ -221,9 +221,21 @@ class ElasticsearchEngine extends Engine
             $model->getKeyName(), $keys
         )->get()->keyBy($model->getKeyName());
 
-        return collect($results['hits']['hits'])->map(function ($hit) use ($model, $models) {
-            return isset($models[$hit['_id']]) ? $models[$hit['_id']] : null;
-        })->filter()->values();
+        $searchableKeys = [];
+        if (method_exists($model, 'getSearchableKeys')) {
+            $searchableKeys = $model->getSearchableKeys();
+        } elseif ($models->first()) {
+            $searchableKeys = array_keys($models->first()->toArray());
+        }
+        $hits = collect($results['hits']['hits'])->map(function ($hit) use ($models) {
+            return isset($models[$hit['_id']]) ? $hit['_source'] : null;
+        })->filter();
+        if (!empty($searchableKeys)) {
+            $hits = $hits->map(function ($hit) use ($searchableKeys) {
+                return collect($hit)->only($searchableKeys);
+            });
+        }
+        return $hits->values();
     }
 
     /**
