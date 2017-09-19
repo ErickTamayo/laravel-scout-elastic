@@ -25,6 +25,13 @@
     "suggest": {
         "elasticsearch/elasticsearch": "Required to use the Elasticsearch engine (^5.0)."
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "ScoutEngines\\Elasticsearch\\ElasticsearchProvider"
+            ]
+        }
+    },
     "minimum-stability": "dev",
     "prefer-stable": true
 }
