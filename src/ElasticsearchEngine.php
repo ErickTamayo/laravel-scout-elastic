@@ -16,6 +16,13 @@ class ElasticsearchEngine extends Engine
      * @var string
      */
     protected $index;
+    
+    /**
+     * Elastic where the instance of Elastic|\Elasticsearch\Client is stored.
+     *
+     * @var object
+     */
+    protected $elastic;
 
     /**
      * Create a new engine instance.
@@ -203,7 +210,7 @@ class ElasticsearchEngine extends Engine
      */
     public function map($results, $model)
     {
-        if (count($results['hits']['total']) === 0) {
+        if ($results['hits']['total'] === 0) {
             return Collection::make();
         }
 
