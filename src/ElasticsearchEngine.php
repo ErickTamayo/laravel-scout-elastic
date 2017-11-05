@@ -147,6 +147,12 @@ class ElasticsearchEngine extends Engine
         if ($sort = $this->sort($builder)) {
             $params['body']['sort'] = $sort;
         }
+        if (isset($options['body']['query'])) {
+            $params['body']['query'] = $options['body']['query'];
+        }
+        if (isset($options['body']['highlight'])) {
+            $params['body']['highlight'] = $options['body']['highlight'];
+        }
 
         if (isset($options['from'])) {
             $params['body']['from'] = $options['from'];
