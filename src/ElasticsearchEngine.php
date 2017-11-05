@@ -150,8 +150,8 @@ class ElasticsearchEngine extends Engine
         if (isset($options['body']['query'])) {
             $params['body']['query'] = $options['body']['query'];
         }
-        if (isset($options['highlight'])) {
-            $params['body']['highlight'] = $options['highlight'];
+        if (isset($options['body']['highlight'])) {
+            $params['body']['highlight'] = $options['body']['highlight'];
         }
 
         if (isset($options['from'])) {
