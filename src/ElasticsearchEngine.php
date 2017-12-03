@@ -15,7 +15,7 @@ class ElasticsearchEngine extends Engine
      *
      * @var string
      */
-    protected $index;
+    protected $indexPrefix;
     
     /**
      * Elastic where the instance of Elastic|\Elasticsearch\Client is stored.
@@ -24,16 +24,19 @@ class ElasticsearchEngine extends Engine
      */
     protected $elastic;
 
+    protected $type = 'doc';
+
+
     /**
      * Create a new engine instance.
      *
      * @param  \Elasticsearch\Client  $elastic
      * @return void
      */
-    public function __construct(Elastic $elastic, $index)
+    public function __construct(Elastic $elastic, $indexPrefix)
     {
         $this->elastic = $elastic;
-        $this->index = $index;
+        $this->indexPrefix = $indexPrefix;
     }
 
     /**
@@ -51,8 +54,8 @@ class ElasticsearchEngine extends Engine
             $params['body'][] = [
                 'update' => [
                     '_id' => $model->getKey(),
-                    '_index' => $this->index,
-                    '_type' => $model->searchableAs(),
+                    '_index' => $this->indexPrefix.$model->searchableAs(),
+                    '_type' => $this->type
                 ]
             ];
             $params['body'][] = [
@@ -79,8 +82,8 @@ class ElasticsearchEngine extends Engine
             $params['body'][] = [
                 'delete' => [
                     '_id' => $model->getKey(),
-                    '_index' => $this->index,
-                    '_type' => $model->searchableAs(),
+                    '_index' => $this->indexPrefix.$model->searchableAs(),
+                    '_type' => $this->type
                 ]
             ];
         });
@@ -133,8 +136,8 @@ class ElasticsearchEngine extends Engine
     protected function performSearch(Builder $builder, array $options = [])
     {
         $params = [
-            'index' => $this->index,
-            'type' => $builder->index ?: $builder->model->searchableAs(),
+            'index' => $this->indexPrefix.$builder->model->searchableAs(),
+            '_type' => $this->type,
             'body' => [
                 'query' => [
                     'bool' => [
