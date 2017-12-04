@@ -19,7 +19,7 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
                     'update' => [
                         '_id' => 1,
                         '_index' => 'scouttable',
-                        '_type' => 'doc',
+                        '_type' => '_doc',
                     ]
                 ],
                 [
@@ -42,7 +42,7 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
                     'delete' => [
                         '_id' => 1,
                         '_index' => 'scouttable',
-                        '_type' => 'doc',
+                        '_type' => '_doc',
                     ]
                 ],
             ]
@@ -57,7 +57,7 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
         $client = Mockery::mock('Elasticsearch\Client');
         $client->shouldReceive('search')->with([
             'index' => 'scouttable',
-            'type' => 'doc',
+            'type' => '_doc',
             'body' => [
                 'query' => [
                     'bool' => [
