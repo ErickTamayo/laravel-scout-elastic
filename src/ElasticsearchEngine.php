@@ -24,7 +24,7 @@ class ElasticsearchEngine extends Engine
      */
     protected $elastic;
 
-    protected $type = 'doc';
+    protected $type = '_doc';
 
 
     /**
