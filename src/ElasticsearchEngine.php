@@ -25,15 +25,25 @@ class ElasticsearchEngine extends Engine
     protected $elastic;
 
     /**
+     * Setting to wrap the query sent to Elastic search
+     *
+     * @var bool
+     */
+    protected $wrapQuery = true;
+
+    /**
      * Create a new engine instance.
      *
      * @param  \Elasticsearch\Client  $elastic
+     * @param  string  $index
+     * @param  bool  $wrapQuery
      * @return void
      */
-    public function __construct(Elastic $elastic, $index)
+    public function __construct(Elastic $elastic, $index, $wrapQuery = true)
     {
         $this->elastic = $elastic;
         $this->index = $index;
+        $this->wrapQuery = $wrapQuery;
     }
 
     /**
@@ -132,13 +142,14 @@ class ElasticsearchEngine extends Engine
      */
     protected function performSearch(Builder $builder, array $options = [])
     {
+        $query = $this->wrapQuery ? "*{$builder->query}*" : $builder->query;
         $params = [
             'index' => $this->index,
             'type' => $builder->index ?: $builder->model->searchableAs(),
             'body' => [
                 'query' => [
                     'bool' => [
-                        'must' => [['query_string' => [ 'query' => "*{$builder->query}*"]]]
+                        'must' => [['query_string' => ['query' => $query]]]
                     ]
                 ]
             ]

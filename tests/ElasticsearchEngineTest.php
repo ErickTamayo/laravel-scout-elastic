@@ -82,6 +82,28 @@ class ElasticsearchEngineTest extends PHPUnit_Framework_TestCase
         $engine->search($builder);
     }
 
+    public function test_search_sends_correct_parameters_to_elasticsearch_not_wrapped()
+    {
+        $client = Mockery::mock(\Elasticsearch\Client::class);
+        $client->shouldReceive('search')->with([
+            'index' => 'scout',
+            'type' => 'table',
+            'body' => [
+                'query' => [
+                    'bool' => [
+                        'must' => [
+                            ['query_string' => ['query' => 'field:value anotherfield:value']],
+                        ]
+                    ]
+                ],
+            ]
+        ]);
+
+        $engine = new ElasticsearchEngine($client, 'scout', false);
+        $builder = new Laravel\Scout\Builder(new ElasticsearchEngineTestModel, 'field:value anotherfield:value');
+        $engine->search($builder);
+    }
+
     public function test_builder_callback_can_manipulate_search_parameters_to_elasticsearch()
     {
         /** @var \Elasticsearch\Client|\Mockery\MockInterface $client */
