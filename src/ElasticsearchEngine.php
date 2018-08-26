@@ -204,11 +204,12 @@ class ElasticsearchEngine extends Engine
     /**
      * Map the given results to instances of the given model.
      *
+     * @param  \Laravel\Scout\Builder  $builder
      * @param  mixed  $results
      * @param  \Illuminate\Database\Eloquent\Model  $model
      * @return Collection
      */
-    public function map($results, $model)
+    public function map(Builder $builder, $results, $model)
     {
         if ($results['hits']['total'] === 0) {
             return Collection::make();
@@ -217,9 +218,11 @@ class ElasticsearchEngine extends Engine
         $keys = collect($results['hits']['hits'])
                         ->pluck('_id')->values()->all();
 
-        $models = $model->whereIn(
-            $model->getKeyName(), $keys
-        )->get()->keyBy($model->getKeyName());
+        $models = $model->getScoutModelsByIds(
+            $builder, $keys
+        )->keyBy(function ($model) {
+            return $model->getScoutKey();
+        });
 
         return collect($results['hits']['hits'])->map(function ($hit) use ($model, $models) {
             return isset($models[$hit['_id']]) ? $models[$hit['_id']] : null;
