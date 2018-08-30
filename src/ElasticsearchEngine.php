@@ -193,11 +193,13 @@ class ElasticsearchEngine extends Engine
         if ($results['hits']['total'] === 0) {
             return Collection::make();
         }
-        $keys = collect($results['hits']['hits'])
-                        ->pluck('_id')->values()->all();
-        $models = $model->whereIn(
-            $model->getKeyName(), $keys
-        )->get()->keyBy($model->getKeyName());
+
+        $models = $model->getScoutModelsByIds(
+            $builder, collect($results['hits']['hits'])->pluck('_id')->values()->all()
+        )->keyBy(function ($model) {
+            return $model->getScoutKey();
+        });
+
         return collect($results['hits']['hits'])->map(function ($hit) use ($model, $models) {
             return isset($models[$hit['_id']]) ? $models[$hit['_id']] : null;
         })->filter()->values();
