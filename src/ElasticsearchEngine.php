@@ -61,7 +61,11 @@ class ElasticsearchEngine extends Engine
             ];
         });
 
-        $this->elastic->bulk($params);
+        $flag = ($this->elastic->bulk($params))['items'][0]['update'];
+
+        if(in_array($flag['status'], [400])) {
+	        abort($flag['status'], $flag['error']['reason']);
+        }
     }
 
     /**
