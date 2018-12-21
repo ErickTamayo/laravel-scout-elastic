@@ -256,4 +256,14 @@ class ElasticsearchEngine extends Engine
             return [$order['column'] => $order['direction']];
         })->toArray();
     }
+
+    /**
+     * Flush all of the model's records from the engine.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return void
+     */
+    public function flush($model)
+    {
+    }
 }
