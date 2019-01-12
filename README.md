@@ -45,9 +45,15 @@ After you've published the Laravel Scout package configuration:
 
 ...
     'elasticsearch' => [
-        'index' => env('ELASTICSEARCH_INDEX', 'laravel'),
+        'index' => env('ELASTICSEARCH_INDEX'),
         'hosts' => [
-            env('ELASTICSEARCH_HOST', 'http://localhost'),
+            [
+                'host' => env('ELASTICSEARCH_HOST', '127.0.0.1'),
+                'port' => env("ELASTICSEARCH_PORT", 9200),
+                'user' => env('ELASTICSEARCH_USER', ''),
+                'pass' => env('ELASTICSEARCH_PASS', ''),
+                'scheme' => env('ELASTICSEARCH_SCHEME', 'http'),
+            ],
         ],
     ],
 ...
