@@ -4,7 +4,7 @@
     "keywords": ["elasticsearch", "laravel", "php", "laravel-scout"],
     "require": {
         "php": ">=5.6.4",
-        "laravel/scout": "^4.0",
+        "laravel/scout": "^5.0",
         "elasticsearch/elasticsearch": "^5.0"
     },
      "require-dev": {
@@ -24,6 +24,13 @@
     },
     "suggest": {
         "elasticsearch/elasticsearch": "Required to use the Elasticsearch engine (^5.0)."
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "ScoutEngines\\Elasticsearch\\ElasticsearchProvider"
+            ]
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true
