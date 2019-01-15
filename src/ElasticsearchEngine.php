@@ -10,272 +10,272 @@ use Illuminate\Support\Collection as BaseCollection;
 
 class ElasticsearchEngine extends Engine
 {
-	/**
-	 * Index where the models will be saved.
-	 *
-	 * @var string
-	 */
-	protected $index;
+    /**
+     * Index where the models will be saved.
+     *
+     * @var string
+     */
+    protected $index;
 
-	/**
-	 * Create a new engine instance.
-	 *
-	 * @param  \Elasticsearch\Client $elastic
-	 *
-	 * @return void
-	 */
-	public function __construct(Elastic $elastic, $index)
-	{
-		$this->elastic = $elastic;
-		$this->index = $index;
-	}
+    /**
+     * Create a new engine instance.
+     *
+     * @param  \Elasticsearch\Client $elastic
+     *
+     * @return void
+     */
+    public function __construct(Elastic $elastic, $index)
+    {
+        $this->elastic = $elastic;
+        $this->index = $index;
+    }
 
-	/**
-	 * Update the given model in the index.
-	 *
-	 * @param  Collection $models
-	 *
-	 * @return void
-	 */
-	public function update($models)
-	{
-		$params['body'] = [];
+    /**
+     * Update the given model in the index.
+     *
+     * @param  Collection $models
+     *
+     * @return void
+     */
+    public function update($models)
+    {
+        $params['body'] = [];
 
-		$models->each(function ($model) use (&$params) {
-			$params['body'][] = [
-				'update' => [
-					'_id'    => $model->getKey(),
-					'_index' => $this->index,
-					'_type'  => $model->searchableAs(),
-				],
-			];
-			$params['body'][] = [
-				'doc'           => $model->toSearchableArray(),
-				'doc_as_upsert' => true,
-			];
-		});
+        $models->each(function ($model) use (&$params) {
+            $params['body'][] = [
+                'update' => [
+                    '_id'    => $model->getKey(),
+                    '_index' => $this->index,
+                    '_type'  => $model->searchableAs(),
+                ],
+            ];
+            $params['body'][] = [
+                'doc'           => $model->toSearchableArray(),
+                'doc_as_upsert' => true,
+            ];
+        });
 
-		$this->elastic->bulk($params);
-	}
+        $this->elastic->bulk($params);
+    }
 
-	/**
-	 * Remove the given model from the index.
-	 *
-	 * @param  Collection $models
-	 *
-	 * @return void
-	 */
-	public function delete($models)
-	{
-		$params['body'] = [];
+    /**
+     * Remove the given model from the index.
+     *
+     * @param  Collection $models
+     *
+     * @return void
+     */
+    public function delete($models)
+    {
+        $params['body'] = [];
 
-		$models->each(function ($model) use (&$params) {
-			$params['body'][] = [
-				'delete' => [
-					'_id'    => $model->getKey(),
-					'_index' => $this->index,
-					'_type'  => $model->searchableAs(),
-				],
-			];
-		});
+        $models->each(function ($model) use (&$params) {
+            $params['body'][] = [
+                'delete' => [
+                    '_id'    => $model->getKey(),
+                    '_index' => $this->index,
+                    '_type'  => $model->searchableAs(),
+                ],
+            ];
+        });
 
-		$this->elastic->bulk($params);
-	}
+        $this->elastic->bulk($params);
+    }
 
-	/**
-	 * Perform the given search on the engine.
-	 *
-	 * @param  Builder $builder
-	 *
-	 * @return mixed
-	 */
-	public function search(Builder $builder)
-	{
-		return $this->performSearch($builder, array_filter([
-			'numericFilters' => $this->filters($builder),
-			'size'           => $builder->limit,
-		]));
-	}
+    /**
+     * Perform the given search on the engine.
+     *
+     * @param  Builder $builder
+     *
+     * @return mixed
+     */
+    public function search(Builder $builder)
+    {
+        return $this->performSearch($builder, array_filter([
+            'numericFilters' => $this->filters($builder),
+            'size'           => $builder->limit,
+        ]));
+    }
 
-	public function searchRaw($model, $query)
-	{
-		$defaults = [
-			'index' => $this->index,
-			'type'  => $model->searchableAs(),
-		];
+    public function searchRaw($model, $query)
+    {
+        $defaults = [
+            'index' => $this->index,
+            'type'  => $model->searchableAs(),
+        ];
 
-		return $this->elastic->search(array_merge($defaults, $query));
-	}
+        return $this->elastic->search(array_merge($defaults, $query));
+    }
 
-	public function savePhrase($model, $params)
-	{
-		$type = $model->searchableAs();
+    public function savePhrase($model, $params)
+    {
+        $type = $model->searchableAs();
 
-		$this->elastic->index([
-			'index' => $this->index,
-			'type'  => $type . '_search_phrases',
-			'body'  => $params,
-		]);
-	}
+        $this->elastic->index([
+            'index' => $this->index,
+            'type'  => $type . '_search_phrases',
+            'body'  => $params,
+        ]);
+    }
 
 
-	/**
-	 * Perform the given search on the engine.
-	 *
-	 * @param  Builder $builder
-	 * @param  int $perPage
-	 * @param  int $page
-	 *
-	 * @return mixed
-	 */
-	public function paginate(Builder $builder, $perPage, $page)
-	{
-		$result = $this->performSearch($builder, [
-			'numericFilters' => $this->filters($builder),
-			'from'           => (($page * $perPage) - $perPage),
-			'size'           => $perPage,
-		]);
+    /**
+     * Perform the given search on the engine.
+     *
+     * @param  Builder $builder
+     * @param  int $perPage
+     * @param  int $page
+     *
+     * @return mixed
+     */
+    public function paginate(Builder $builder, $perPage, $page)
+    {
+        $result = $this->performSearch($builder, [
+            'numericFilters' => $this->filters($builder),
+            'from'           => (($page * $perPage) - $perPage),
+            'size'           => $perPage,
+        ]);
 
-		$result['nbPages'] = $result['hits']['total'] / $perPage;
+        $result['nbPages'] = $result['hits']['total'] / $perPage;
 
-		return $result;
-	}
+        return $result;
+    }
 
-	/**
-	 * Perform the given search on the engine.
-	 *
-	 * @param  Builder $builder
-	 * @param  array $options
-	 *
-	 * @return mixed
-	 */
-	protected function performSearch(Builder $builder, array $options = [])
-	{
-		$params = [
-			'index' => $this->index,
-			'type'  => $builder->index ?: $builder->model->searchableAs(),
-			'body'  => [
-				'query'     => [
-					'bool' => [
-						'must' => [
-							[
-								'query_string' => [
-									'query'            => "*{$builder->query}* OR {$builder->query}~",
-									'analyze_wildcard' => true,
-									'all_fields'       => true,
-								],
-							],
-						],
-					],
-				],
-				'highlight' => [
-					'fields' => [
-						'snippet.content' => new \stdClass(),
-						'snippet.header'  => new \stdClass(),
-					],
-				],
-			],
-		];
+    /**
+     * Perform the given search on the engine.
+     *
+     * @param  Builder $builder
+     * @param  array $options
+     *
+     * @return mixed
+     */
+    protected function performSearch(Builder $builder, array $options = [])
+    {
+        $params = [
+            'index' => $this->index,
+            'type'  => $builder->index ?: $builder->model->searchableAs(),
+            'body'  => [
+                'query'     => [
+                    'bool' => [
+                        'must' => [
+                            [
+                                'query_string' => [
+                                    'query'            => "*{$builder->query}* OR {$builder->query}~",
+                                    'analyze_wildcard' => true,
+                                    'all_fields'       => true,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'highlight' => [
+                    'fields' => [
+                        'snippet.content' => new \stdClass(),
+                        'snippet.header'  => new \stdClass(),
+                    ],
+                ],
+            ],
+        ];
 
-		if ($sort = $this->sort($builder)) {
-			$params['body']['sort'] = $sort;
-		}
+        if ($sort = $this->sort($builder)) {
+            $params['body']['sort'] = $sort;
+        }
 
-		if (isset($options['from'])) {
-			$params['body']['from'] = $options['from'];
-		}
+        if (isset($options['from'])) {
+            $params['body']['from'] = $options['from'];
+        }
 
-		if (isset($options['size'])) {
-			$params['body']['size'] = $options['size'];
-		}
+        if (isset($options['size'])) {
+            $params['body']['size'] = $options['size'];
+        }
 
-		if (isset($options['numericFilters']) && count($options['numericFilters'])) {
-			$params['body']['query']['bool']['must'] = array_merge($params['body']['query']['bool']['must'],
-				$options['numericFilters']);
-		}
+        if (isset($options['numericFilters']) && count($options['numericFilters'])) {
+            $params['body']['query']['bool']['must'] = array_merge($params['body']['query']['bool']['must'],
+                $options['numericFilters']);
+        }
 
-		return $this->elastic->search($params);
-	}
+        return $this->elastic->search($params);
+    }
 
-	/**
-	 * Get the filter array for the query.
-	 *
-	 * @param  Builder $builder
-	 *
-	 * @return array
-	 */
-	protected function filters(Builder $builder)
-	{
-		return collect($builder->wheres)->map(function ($value, $key) {
-			return ['match_phrase' => [$key => $value]];
-		})->values()->all();
-	}
+    /**
+     * Get the filter array for the query.
+     *
+     * @param  Builder $builder
+     *
+     * @return array
+     */
+    protected function filters(Builder $builder)
+    {
+        return collect($builder->wheres)->map(function ($value, $key) {
+            return ['match_phrase' => [$key => $value]];
+        })->values()->all();
+    }
 
-	/**
-	 * Pluck and return the primary keys of the given results.
-	 *
-	 * @param  mixed $results
-	 *
-	 * @return \Illuminate\Support\Collection
-	 */
-	public function mapIds($results)
-	{
-		return collect($results['hits']['hits'])->pluck('_id')->values();
-	}
+    /**
+     * Pluck and return the primary keys of the given results.
+     *
+     * @param  mixed $results
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function mapIds($results)
+    {
+        return collect($results['hits']['hits'])->pluck('_id')->values();
+    }
 
-	/**
-	 * Map the given results to instances of the given model.
-	 *
-	 * @param  mixed $results
-	 * @param  \Illuminate\Database\Eloquent\Model $model
-	 *
-	 * @return Collection
-	 */
-	public function map($results, $model)
-	{
-		if ($results['hits']['total'] === 0) {
-			return Collection::make();
-		}
+    /**
+     * Map the given results to instances of the given model.
+     *
+     * @param  mixed $results
+     * @param  \Illuminate\Database\Eloquent\Model $model
+     *
+     * @return Collection
+     */
+    public function map($results, $model)
+    {
+        if ($results['hits']['total'] === 0) {
+            return Collection::make();
+        }
 
-		$keys = collect($results['hits']['hits'])
-			->pluck('_id')->values()->all();
+        $keys = collect($results['hits']['hits'])
+            ->pluck('_id')->values()->all();
 
-		$models = $model->whereIn(
-			$model->getKeyName(), $keys
-		)->get()->keyBy($model->getKeyName());
+        $models = $model->whereIn(
+            $model->getKeyName(), $keys
+        )->get()->keyBy($model->getKeyName());
 
-		return collect($results['hits']['hits'])->map(function ($hit) use ($model, $models) {
-			return isset($models[$hit['_id']]) ? $models[$hit['_id']] : null;
-		})->filter()->values();
-	}
+        return collect($results['hits']['hits'])->map(function ($hit) use ($model, $models) {
+            return isset($models[$hit['_id']]) ? $models[$hit['_id']] : null;
+        })->filter()->values();
+    }
 
-	/**
-	 * Get the total count from a raw result returned by the engine.
-	 *
-	 * @param  mixed $results
-	 *
-	 * @return int
-	 */
-	public function getTotalCount($results)
-	{
-		return $results['hits']['total'];
-	}
+    /**
+     * Get the total count from a raw result returned by the engine.
+     *
+     * @param  mixed $results
+     *
+     * @return int
+     */
+    public function getTotalCount($results)
+    {
+        return $results['hits']['total'];
+    }
 
-	/**
-	 * Generates the sort if theres any.
-	 *
-	 * @param  Builder $builder
-	 *
-	 * @return array|null
-	 */
-	protected function sort($builder)
-	{
-		if (count($builder->orders) == 0) {
-			return null;
-		}
+    /**
+     * Generates the sort if theres any.
+     *
+     * @param  Builder $builder
+     *
+     * @return array|null
+     */
+    protected function sort($builder)
+    {
+        if (count($builder->orders) == 0) {
+            return null;
+        }
 
-		return collect($builder->orders)->map(function ($order) {
-			return [$order['column'] => $order['direction']];
-		})->toArray();
-	}
+        return collect($builder->orders)->map(function ($order) {
+            return [$order['column'] => $order['direction']];
+        })->toArray();
+    }
 }
