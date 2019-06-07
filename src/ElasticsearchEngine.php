@@ -165,7 +165,6 @@ class ElasticsearchEngine extends Engine
                 $options['numericFilters']);
         }
 
-        //dd($params);
         if ($builder->callback) {
             return call_user_func(
                 $builder->callback,
@@ -174,8 +173,6 @@ class ElasticsearchEngine extends Engine
                 $params
             );
         }
-
-        //dd($this->elastic->search($params));
 
         return $this->elastic->search($params);
     }
@@ -223,14 +220,6 @@ class ElasticsearchEngine extends Engine
         }
 
         $keys = collect($results['hits']['hits'])->pluck('_id')->values()->all();
-
-
-      /*  return $model->getScoutModelsByIds(
-                $builder, $keys
-            )->filter(function ($model) use ($keys) {
-                return in_array($model->getScoutKey(), $keys);
-            });
-        */
 
         return $model->getScoutModelsByIds(
             $builder, $keys
