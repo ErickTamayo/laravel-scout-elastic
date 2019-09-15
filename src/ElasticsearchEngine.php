@@ -2,6 +2,7 @@
 
 namespace ScoutEngines\Elasticsearch;
 
+use Illuminate\Support\Arr;
 use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;
 use Elasticsearch\Client as Elastic;
@@ -15,7 +16,7 @@ class ElasticsearchEngine extends Engine
      * @var string
      */
     protected $index;
-    
+
     /**
      * Elastic where the instance of Elastic|\Elasticsearch\Client is stored.
      *
@@ -117,7 +118,7 @@ class ElasticsearchEngine extends Engine
             'size' => $perPage,
         ]);
 
-       $result['nbPages'] = $result['hits']['total']/$perPage;
+       $result['nbPages'] = $this->getTotalCount($result)/$perPage;
 
         return $result;
     }
@@ -210,7 +211,7 @@ class ElasticsearchEngine extends Engine
      */
     public function map(Builder $builder, $results, $model)
     {
-        if ($results['hits']['total'] === 0) {
+        if ($this->getTotalCount($results) === 0) {
             return $model->newCollection();
         }
 
@@ -231,7 +232,13 @@ class ElasticsearchEngine extends Engine
      */
     public function getTotalCount($results)
     {
-        return $results['hits']['total'];
+        $total = Arr::get($results, 'hits.total');
+        // version 7
+        if (is_array($total)) {
+            $total = $total['value'];
+        }
+
+        return $total;
     }
 
     /**
