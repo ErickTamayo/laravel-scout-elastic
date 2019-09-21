@@ -219,7 +219,9 @@ class ElasticsearchEngine extends Engine
             $keys
         )->filter(function ($model) use ($keys) {
             return in_array($model->getScoutKey(), $keys);
-        });
+        })->sortBy(function ($model) use ($modelIdPositions) {
+            return $modelIdPositions[$model->getScoutKey()];
+        })->values();
     }
 
     /**
