@@ -1,5 +1,5 @@
 {
-    "name": "bethink/elastic-scout",
+    "name": "bethinkpl/elastic-scout",
     "description": "Elasticsearch Driver for Laravel Scout",
     "keywords": ["elasticsearch", "laravel", "php", "laravel-scout"],
     "require": {
