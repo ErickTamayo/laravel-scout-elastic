@@ -1,6 +1,6 @@
 language: php
 php:
-  - 7.0
+  - 7.2
 
 before_script:
   - sleep 10
@@ -11,4 +11,3 @@ script: vendor/phpunit/phpunit/phpunit --verbose
 
 services:
   - elasticsearch
-
