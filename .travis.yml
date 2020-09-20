@@ -1,14 +1,13 @@
 language: php
 php:
-  - 7.0
+  - 7.2
 
 before_script:
   - sleep 10
   - travis_retry composer self-update
-  - travis_retry composer install --prefer-source --no-interaction --dev
+  - travis_retry composer install --prefer-source --no-interaction
 
 script: vendor/phpunit/phpunit/phpunit --verbose
 
 services:
   - elasticsearch
-

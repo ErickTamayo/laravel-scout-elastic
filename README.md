@@ -1,7 +1,6 @@
 # Laravel Scout Elasticsearch Driver
 
-[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
-
+[![Latest Stable Version](https://poser.pugx.org/tamayo/laravel-scout-elastic/v)](//packagist.org/packages/tamayo/laravel-scout-elastic) [![Total Downloads](https://poser.pugx.org/tamayo/laravel-scout-elastic/downloads)](//packagist.org/packages/tamayo/laravel-scout-elastic) [![License](https://poser.pugx.org/tamayo/laravel-scout-elastic/license)](//packagist.org/packages/tamayo/laravel-scout-elastic) ![Build Status](https://travis-ci.org/ErickTamayo/laravel-scout-elastic.svg?branch=master)
 This package makes is the [Elasticsearch](https://www.elastic.co/products/elasticsearch) driver for Laravel Scout.
 
 ## Contents
@@ -15,47 +14,65 @@ This package makes is the [Elasticsearch](https://www.elastic.co/products/elasti
 
 You can install the package via composer:
 
-``` bash
+```bash
 composer require tamayo/laravel-scout-elastic
 ```
 
-You must add the Scout service provider and the package service provider in your app.php config:
+Laravel will automatically register the driver service provider.
 
-```php
-// config/app.php
-'providers' => [
-    ...
-    Laravel\Scout\ScoutServiceProvider::class,
-    ...
-    ScoutEngines\Elasticsearch\ElasticsearchProvider::class,
-],
+#### Install elasticsearch-php client
+
+For use this library we recomend using the latest version at this time `(^7.9)`
+
+```bash
+composer require elasticsearch/elasticsearch
 ```
 
 ### Setting up Elasticsearch configuration
-You must have a Elasticsearch server up and running with the index you want to use created
 
-If you need help with this please refer to the [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
-
-After you've published the Laravel Scout package configuration:
+After you've published the Laravel Scout package configuration, you need to set your driver to `elasticsearch` and add its configuration:
 
 ```php
 // config/scout.php
-// Set your driver to elasticsearch
-    'driver' => env('SCOUT_DRIVER', 'elasticsearch'),
-
 ...
+    // Set your driver to elasticsearch
+    'driver' => env('SCOUT_DRIVER', 'elasticsearch'),
+...
+    /*
+    |--------------------------------------------------------------------------
+    | Elasticsearch Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Here you may configure your Elasticsearch settings.
+    |
+    */
     'elasticsearch' => [
-        'index' => env('ELASTICSEARCH_INDEX', 'laravel'),
         'hosts' => [
-            env('ELASTICSEARCH_HOST', 'http://localhost'),
+            env('ELASTICSEARCH_HOST', 'localhost'),
+            // [
+            //     'host'   => env('ELASTICSEARCH_HOST', 'localhost'),
+            //     'port'   => env('ELASTICSEARCH_PORT', '9200'),
+            //     'scheme' => env('ELASTICSEARCH_SCHEME', 'https'),
+            //     'path'   => env('ELASTICSEARCH_PATH', '/elastic'),
+            //     'user'   => env('ELASTICSEARCH_USER', 'username'),
+            //     'pass'   => env('ELASTICSEARCH_PASS', 'password'),
+            // ]
         ],
-    ],
+    ]
 ...
 ```
 
+For host configuration you can refer to the official [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
+
 ## Usage
 
-Now you can use Laravel Scout as described in the [official documentation](https://laravel.com/docs/5.3/scout)
+Now you can use Laravel Scout as described in the [Laravel Scout official documentation](https://laravel.com/docs/8.x/scout)
+
+## Limitations
+
+**Identifying Users**
+Currrently user identification is not supported.
+
 ## Credits
 
 - [Erick Tamayo](https://github.com/ericktamayo)

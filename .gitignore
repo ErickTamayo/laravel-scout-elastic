@@ -6,3 +6,4 @@ composer.lock
 Thumbs.db
 /phpunit.xml
 /build
+.phpunit.result.cache
