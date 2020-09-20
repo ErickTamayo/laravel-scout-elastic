@@ -12,9 +12,9 @@ class ElasticsearchEngine extends Engine
     /**
      * Elastic client.
      *
-     * @var object
+     * @var Elastic
      */
-    protected Elastic $elastic;
+    protected $elastic;
 
     /**
      * Create a new engine instance.
