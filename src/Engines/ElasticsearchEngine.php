@@ -212,12 +212,16 @@ class ElasticsearchEngine extends Engine
 
         $keys = collect($results['hits']['hits'])->pluck('_id')->values()->all();
 
+        $modelIdPositions = array_flip($keys);
+
         return $model->getScoutModelsByIds(
             $builder,
             $keys
         )->filter(function ($model) use ($keys) {
             return in_array($model->getScoutKey(), $keys);
-        });
+        })->sortBy(function ($model) use ($modelIdPositions) {
+            return $modelIdPositions[$model->getScoutKey()];
+        })->values();
     }
 
     /**

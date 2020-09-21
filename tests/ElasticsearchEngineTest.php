@@ -144,4 +144,40 @@ class ElasticsearchEngineTest extends TestCase
 
         $this->assertEquals(1, count($results));
     }
+
+    public function test_map_correctly_maps_sort_results()
+    {
+        /** @var Client|MockInterface $client */
+        $client = Mockery::mock(Client::class);
+        $engine = new ElasticsearchEngine($client);
+
+        /** @var Builder|MockInterface $builder */
+        $builder = Mockery::mock(Builder::class);
+
+        /** @var Model|MockInterface $model */
+        $secondModel = Mockery::mock(Model::class);
+        $secondModel->shouldReceive('getScoutKey')->andReturn('2');
+
+        /** @var Model|MockInterface $model */
+        $model = Mockery::mock(Model::class);
+        $model->shouldReceive('getScoutKey')->andReturn('1');
+        $model->shouldReceive('getScoutModelsByIds')->once()->with($builder, ['2', '1'])->andReturn($models = Collection::make([$model, $secondModel]));
+        $model->shouldReceive('newCollection')->andReturn($models);
+
+        $results = $engine->map($builder, [
+            'hits' => [
+                'total' => '2',
+                'hits' => [
+                    [
+                        '_id' => '2'
+                    ],
+                    [
+                        '_id' => '1'
+                    ]
+                ]
+            ]
+        ], $model);
+        $this->assertEquals($secondModel, $results[0]);
+        $this->assertEquals($model, $results[1]);
+    }
 }
