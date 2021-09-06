@@ -154,7 +154,7 @@ class ElasticsearchEngineTest extends TestCase
         /** @var Builder|MockInterface $builder */
         $builder = Mockery::mock(Builder::class);
 
-        /** @var Model|MockInterface $model */
+        /** @var Model|MockInterface $secondModel */
         $secondModel = Mockery::mock(Model::class);
         $secondModel->shouldReceive('getScoutKey')->andReturn('2');
 
@@ -179,5 +179,41 @@ class ElasticsearchEngineTest extends TestCase
         ], $model);
         $this->assertEquals($secondModel, $results[0]);
         $this->assertEquals($model, $results[1]);
+    }
+
+    public function test_creates_paginate_object_with_total_as_integer(){
+        
+        $total = 42;
+        $pages = 3;
+
+        /** @var Client|MockInterface $client */
+        $client = Mockery::mock(Client::class);
+        $client->shouldReceive('search')->andReturn(['hits' => ['total'=> $total]]);
+
+        /** @var Builder|MockInterface $builder */
+        $builder = Mockery::mock(Builder::class);
+        $builder->model = new SearchableModel;
+
+        $engine = new ElasticsearchEngine($client);
+        $results = $engine->paginate($builder, $total/$pages, 0); 
+        $this->assertEquals($pages, $results['nbPages']);
+    }
+
+    public function test_creates_paginate_object_with_total_as_object(){
+        
+        $total = 42;
+        $pages = 3;
+
+        /** @var Client|MockInterface $client */
+        $client = Mockery::mock(Client::class);
+        $client->shouldReceive('search')->andReturn(['hits' => ['total'=>['value' => $total]]]);
+
+        /** @var Builder|MockInterface $builder */
+        $builder = Mockery::mock(Builder::class);
+        $builder->model = new SearchableModel;
+
+        $engine = new ElasticsearchEngine($client);
+        $results = $engine->paginate($builder, $total/$pages, 0); 
+        $this->assertEquals($pages, $results['nbPages']);
     }
 }
