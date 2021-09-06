@@ -134,15 +134,15 @@ class ElasticsearchEngine extends Engine
      */
     public function paginate(Builder $builder, $perPage, $page)
     {
-        $result = $this->performSearch($builder, [
+        $results = $this->performSearch($builder, [
             'numericFilters' => $this->filters($builder),
             'from' => (($page * $perPage) - $perPage),
             'size' => $perPage,
         ]);
 
-        $result['nbPages'] = $result['hits']['total'] / $perPage;
+        $results['nbPages'] = $this->getTotalCount($results) / $perPage;
 
-        return $result;
+        return $results;
     }
 
     /**
@@ -235,7 +235,7 @@ class ElasticsearchEngine extends Engine
      */
     public function map(Builder $builder, $results, $model)
     {
-        if ($results['hits']['total'] === 0) {
+        if ($this->getTotalCount($results) === 0) {
             return $model->newCollection();
         }
 
@@ -261,7 +261,11 @@ class ElasticsearchEngine extends Engine
      */
     public function getTotalCount($results)
     {
-        return $results['hits']['total'];
+        if(is_numeric($results['hits']['total'])){
+            return $results['hits']['total'];
+        } else {
+            return $results['hits']['total']['value'];
+        }
     }
 
     /**
