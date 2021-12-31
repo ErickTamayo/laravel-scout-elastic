@@ -27,6 +27,35 @@ class ElasticsearchEngine extends Engine
         $this->elastic = $elastic;
     }
 
+    public function lazyMap(Builder $builder, $results, $model)
+    {
+        return Collection::make($results['hits']['hits'])->map(function ($hit) use ($model) {
+            return $model->newFromBuilder($hit['_source']);
+        });
+    }
+
+    public function createIndex($name, array $options = [])
+    {
+        $params = [
+            'index' => $name,
+        ];
+
+        if (isset($options['shards'])) {
+            $params['body']['settings']['number_of_shards'] = $options['shards'];
+        }
+
+        if (isset($options['replicas'])) {
+            $params['body']['settings']['number_of_replicas'] = $options['replicas'];
+        }
+
+        $this->elastic->indices()->create($params);
+    }
+
+    public function deleteIndex($name)
+    {
+        $this->elastic->indices()->delete(['index' => $name]);
+    }
+
     /**
      * Update the given model in the index.
      *
