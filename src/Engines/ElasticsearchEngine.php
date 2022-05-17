@@ -64,7 +64,7 @@ class ElasticsearchEngine extends Engine
                 'update' => [
                     '_id' => $model->getScoutKey(),
                     '_index' => $model->searchableAs(),
-                    '_type' => get_class($model),
+                    //'_type' => get_class($model), in elastic - v8 this param is deleted
                 ]
             ];
             $params['body'][] = [
@@ -91,7 +91,7 @@ class ElasticsearchEngine extends Engine
                 'delete' => [
                     '_id' => $model->getKey(),
                     '_index' => $model->searchableAs(),
-                    '_type' => get_class($model),
+                    //'_type' => get_class($model),
                 ]
             ];
         });
