@@ -231,7 +231,7 @@ class ElasticsearchEngine extends Engine
      * @param  \Laravel\Scout\Builder  $builder
      * @param  mixed  $results
      * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return Collection
+     * @return \Illuminate\Support\Collection
      */
     public function map(Builder $builder, $results, $model)
     {
@@ -243,10 +243,9 @@ class ElasticsearchEngine extends Engine
 
         $modelIdPositions = array_flip($keys);
 
-        return $model->getScoutModelsByIds(
-            $builder,
-            $keys
-        )->filter(function ($model) use ($keys) {
+        return collect($results['hits']['hits'])->map(function ($result) use ($model) {
+            return new $model($result['_source']);
+        })->filter(function ($model) use ($keys) {
             return in_array($model->getScoutKey(), $keys);
         })->sortBy(function ($model) use ($modelIdPositions) {
             return $modelIdPositions[$model->getScoutKey()];
