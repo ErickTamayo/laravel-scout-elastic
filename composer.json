@@ -19,9 +19,10 @@
     "laravel/scout": "^9.3"
   },
   "require-dev": {
-    "elasticsearch/elasticsearch": "^7.9",
+    "elasticsearch/elasticsearch": "^v8.2.3",
     "mockery/mockery": "^1.0",
-    "phpunit/phpunit": "^8.0|^9.3"
+    "phpunit/phpunit": "^8.0|^9.3",
+    "symfony/http-client": "^6.0"
   },
   "suggest": {
     "elasticsearch/elasticsearch": "Required to use the Elasticsearch engine (^7.9.0)."

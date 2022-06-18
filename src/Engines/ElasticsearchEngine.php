@@ -4,7 +4,7 @@ namespace Tamayo\LaravelScoutElastic\Engines;
 
 use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;
-use Elasticsearch\Client as Elastic;
+use Elastic\Elasticsearch\Client as Elastic;
 use Illuminate\Database\Eloquent\Collection;
 
 class ElasticsearchEngine extends Engine
@@ -75,7 +75,6 @@ class ElasticsearchEngine extends Engine
                 'update' => [
                     '_id' => $model->getScoutKey(),
                     '_index' => $model->searchableAs(),
-                    '_type' => get_class($model),
                 ]
             ];
             $params['body'][] = [
@@ -83,7 +82,6 @@ class ElasticsearchEngine extends Engine
                 'doc_as_upsert' => true
             ];
         });
-
         $this->elastic->bulk($params);
     }
 
@@ -102,7 +100,6 @@ class ElasticsearchEngine extends Engine
                 'delete' => [
                     '_id' => $model->getKey(),
                     '_index' => $model->searchableAs(),
-                    '_type' => get_class($model),
                 ]
             ];
         });

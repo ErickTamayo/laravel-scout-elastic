@@ -31,7 +31,8 @@ composer require elasticsearch/elasticsearch
 
 ### Setting up Elasticsearch configuration
 
-After you've published the Laravel Scout package configuration, you need to set your driver to `elasticsearch` and add its configuration:
+After you've published the Laravel Scout package configuration, you need to set your driver to `elasticsearch` and add
+its configuration:
 
 ```php
 // config/scout.php
@@ -47,27 +48,27 @@ After you've published the Laravel Scout package configuration, you need to set 
     | Here you may configure your Elasticsearch settings.
     |
     */
+
     'elasticsearch' => [
+        'index' => env('ELASTICSEARCH_INDEX', 'blog'),
         'hosts' => [
-            env('ELASTICSEARCH_HOST', 'localhost'),
-            // [
-            //     'host'   => env('ELASTICSEARCH_HOST', 'localhost'),
-            //     'port'   => env('ELASTICSEARCH_PORT', '9200'),
-            //     'scheme' => env('ELASTICSEARCH_SCHEME', 'https'),
-            //     'path'   => env('ELASTICSEARCH_PATH', '/elastic'),
-            //     'user'   => env('ELASTICSEARCH_USER', 'username'),
-            //     'pass'   => env('ELASTICSEARCH_PASS', 'password'),
-            // ]
+            'host' => env('ELASTICSEARCH_HOST', 'localhost'),
         ],
-    ]
+        'auth' => [
+            'user' => env('ELASTICSEARCH_USERNAME', 'username'),
+            'pass' => env('ELASTICSEARCH_PASSWORD', 'password'),
+        ],
+    ],
 ...
 ```
 
-For host configuration you can refer to the official [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
+For host configuration you can refer to the
+official [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
 
 ## Usage
 
-Now you can use Laravel Scout as described in the [Laravel Scout official documentation](https://laravel.com/docs/8.x/scout)
+Now you can use Laravel Scout as described in
+the [Laravel Scout official documentation](https://laravel.com/docs/8.x/scout)
 
 ## Limitations
 

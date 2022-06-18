@@ -3,7 +3,7 @@
 namespace Tamayo\LaravelScoutElastic;
 
 use Exception;
-use Elasticsearch\ClientBuilder;
+use Elastic\Elasticsearch\ClientBuilder;
 use Laravel\Scout\EngineManager;
 use Illuminate\Support\ServiceProvider;
 use Tamayo\LaravelScoutElastic\Engines\ElasticsearchEngine;
@@ -16,11 +16,11 @@ class LaravelScoutElasticProvider extends ServiceProvider
     public function boot()
     {
         $this->ensureElasticClientIsInstalled();
-
         resolve(EngineManager::class)->extend('elasticsearch', function () {
             return new ElasticsearchEngine(
                 ClientBuilder::create()
                     ->setHosts(config('scout.elasticsearch.hosts'))
+                    ->setBasicAuthentication(config('scout.elasticsearch.auth.user'),config('scout.elasticsearch.auth.pass'))
                     ->build()
             );
         });
