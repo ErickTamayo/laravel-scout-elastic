@@ -8,3 +8,4 @@ Thumbs.db
 /build
 .phpunit.result.cache
 _ide_helper.php
+.idea

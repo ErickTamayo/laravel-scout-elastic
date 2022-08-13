@@ -4,7 +4,7 @@ namespace Tamayo\LaravelScoutElastic\Engines;
 
 use Laravel\Scout\Builder;
 use Laravel\Scout\Engines\Engine;
-use Elasticsearch\Client as Elastic;
+use Elastic\Elasticsearch\Client as Elastic;
 use Illuminate\Database\Eloquent\Collection;
 
 class ElasticsearchEngine extends Engine
@@ -75,7 +75,6 @@ class ElasticsearchEngine extends Engine
                 'update' => [
                     '_id' => $model->getScoutKey(),
                     '_index' => $model->searchableAs(),
-                    '_type' => get_class($model),
                 ]
             ];
             $params['body'][] = [
@@ -102,7 +101,6 @@ class ElasticsearchEngine extends Engine
                 'delete' => [
                     '_id' => $model->getKey(),
                     '_index' => $model->searchableAs(),
-                    '_type' => get_class($model),
                 ]
             ];
         });
@@ -140,7 +138,8 @@ class ElasticsearchEngine extends Engine
             'size' => $perPage,
         ]);
 
-        $result['nbPages'] = $result['hits']['total'] / $perPage;
+        // 我不知道这行有什么用，但是注释了就可以了，es:8.2.3测试通过
+//        $result['nbPages'] = $result['hits']['total'] / $perPage;
 
         return $result;
     }
@@ -261,7 +260,7 @@ class ElasticsearchEngine extends Engine
      */
     public function getTotalCount($results)
     {
-        return $results['hits']['total'];
+        return $results['hits']['total']['value'];
     }
 
     /**
